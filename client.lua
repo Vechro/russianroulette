@@ -27,25 +27,26 @@ AddEventHandler("russianRoulette", function(player)
 
         for i = 1, #revolvers do -- find which revolver the player has
             if HasPedGotWeapon(player, revolvers[i], 0) then
-                table.insert(revolversAtHand, revolvers[i])
-                if GetCurrentPedWeapon(player, revolvers[i], 0) then
+                if GetCurrentPedWeapon(player, revolvers[i], 0) then -- if the ped has a revolver equipped then further checking is unnecessary
                     weapon = revolvers[i]
+                    break
                 end
+                table.insert(revolversAtHand, revolvers[i]) -- make a list of revolvers the player has in his inventory to pick one at random if one isn't equipped
             end
         end
 
-        print("stage 3 and " .. tostring(weapon))
-
-        if not weapon then -- if the player doesn't have a revolver, we give a random one
-            weapon = revolvers[math.random(1, #revolvers)]
-            GiveWeaponToPed(player, weapon, 1, false, false)
-        else
-            if GetAmmoInPedWeapon(player, weapon) == 0 then -- if the player has a revolver, check if it has ammo, if not, give a bullet
+        if weapon then -- if the player has a revolver equipped, check if it has ammo, if not, give a bullet
+            if GetAmmoInPedWeapon(player, weapon) == 0 then
                 AddAmmoToPed(player, weapon, 1)
             end
+        else  -- if the player doesn't have a revolver, we check if there's one in his inventory, if he does, use it, if not, give a random revolver
+            if revolversAtHand[1] then
+                weapon = revolversAtHand[math.random(1, #revolversAtHand)]
+            else
+                weapon = revolvers[math.random(1, #revolvers)]
+                GiveWeaponToPed(player, weapon, 1, false, false)
+            end
         end
-
-        print("stage 4")
 
         local dice = math.random(1, 6)
         
@@ -62,16 +63,12 @@ AddEventHandler("russianRoulette", function(player)
             SetEntityHealth(player, 0)
             print("SHOT")
         else
-            while not (GetEntityAnimCurrentTime(player, "mp_suicide", "pistol") > 0.25) do
+            while not (GetEntityAnimCurrentTime(player, "mp_suicide", "pistol") > 0.21) do
                 Wait(0)
             end
             -- PlaySoundFromEntity(-1, "REVOLVER_DRY_FIRE_02B", player, "weapons", false, 0)
             StopAnimTask(player, "mp_suicide", "pistol", 4.0)
             print("NO SHOT")
-        end
-
-        if GetEntityAnimCurrentTime(player, "mp_suicide", "pistol") > 0.365 then
-        print("taking too much time")
         end
 
         RemoveAnimDict("mp_suicide")
