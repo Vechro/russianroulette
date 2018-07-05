@@ -36,21 +36,25 @@ AddEventHandler("russianRoulette", function(player)
         end
 
         if weapon then -- if the player has a revolver equipped, check if it has ammo, if not, give a bullet
-            if GetAmmoInPedWeapon(player, weapon) == 0 then
-                AddAmmoToPed(player, weapon, 1)
+            if GetAmmoInPedWeapon(player, weapon) <= 6 then
+                AddAmmoToPed(player, weapon, 6)
             end
         else  -- if the player doesn't have a revolver, we check if there's one in his inventory, if he does, use it, if not, give a random revolver
             if revolversAtHand[1] then
                 weapon = revolversAtHand[math.random(1, #revolversAtHand)]
             else
                 weapon = revolvers[math.random(1, #revolvers)]
-                GiveWeaponToPed(player, weapon, 1, false, false)
+                GiveWeaponToPed(player, weapon, 6, false, false)
             end
         end
 
         local dice = math.random(1, 6)
-        
+
         SetCurrentPedWeapon(player, weapon, true) -- equip weapon
+        SetAmmoInClip(player, weapon, 1) -- necessary to reload
+        MakePedReload(player) -- only put 1 round in chamber
+        Wait(1000) -- wait till reload is done
+        SetAmmoInClip(player, weapon, 1) -- make it actually set the clip to only 1 round
 
         TaskPlayAnim(player, "mp_suicide", "pistol", 8.0, -8.0, -1, 270540800, 0, false, false, false)
 
@@ -61,14 +65,14 @@ AddEventHandler("russianRoulette", function(player)
             ClearEntityLastDamageEntity(player)
             SetPedShootsAtCoord(player, 0.0, 0.0, 0.0, false)
             SetEntityHealth(player, 0)
-            print("SHOT")
         else
             while not (GetEntityAnimCurrentTime(player, "mp_suicide", "pistol") > 0.21) do
                 Wait(0)
             end
             -- PlaySoundFromEntity(-1, "REVOLVER_DRY_FIRE_02B", player, "weapons", false, 0)
             StopAnimTask(player, "mp_suicide", "pistol", 4.0)
-            print("NO SHOT")
+            MakePedReload(player)
+            AddAmmoToPed(player, weapon, 5)
         end
 
         RemoveAnimDict("mp_suicide")
