@@ -3,7 +3,7 @@ local revolvers = {"weapon_revolver", "weapon_revolver_mk2", "weapon_doubleactio
 RegisterCommand("rr", function(playerServerID, args, rawString)
     TriggerEvent("russianRoulette", PlayerPedId())
 end, false)
--- try firing a shot without ammo
+
 RegisterNetEvent("russianRoulette")
 
 AddEventHandler("russianRoulette", function(player)
